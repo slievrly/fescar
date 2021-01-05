@@ -51,10 +51,10 @@ import io.seata.tm.api.DefaultFailureHandlerImpl;
 import io.seata.tm.api.FailureHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
@@ -95,9 +95,9 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.UNDO_PREFIX;
 /**
  * @author xingfudeshi@gmail.com
  */
-@ComponentScan(basePackages = "io.seata.spring.boot.autoconfigure.properties")
 @ConditionalOnProperty(prefix = SEATA_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
 @Configuration
+@AutoConfigureAfter(SeataPropertiesConfiguration.class)
 public class SeataAutoConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(SeataAutoConfiguration.class);
 
@@ -151,34 +151,7 @@ public class SeataAutoConfiguration {
     }
 
     @Bean
-    @DependsOn({"seataProperties",
-        "rmProperties",
-        "tmProperties",
-        "lockProperties",
-        "serviceProperties",
-        "shutdownProperties",
-        "threadFactoryProperties",
-        "undoProperties",
-        "undoCompressProperties",
-        "logProperties",
-        "transportProperties",
-        "configProperties",
-        "configFileProperties",
-        "registryProperties",
-        "configNacosProperties",
-        "configConsulProperties",
-        "configZooKeeperProperties",
-        "configApolloProperties",
-        "configEtcd3Properties",
-        "configCustomProperties",
-        "registryConsulProperties",
-        "registryEtcd3Properties",
-        "registryEurekaProperties",
-        "registryNacosProperties",
-        "registryRedisProperties",
-        "registrySofaProperties",
-        "registryZooKeeperProperties",
-        "registryCustomProperties", BEAN_NAME_SPRING_APPLICATION_CONTEXT_PROVIDER, BEAN_NAME_FAILURE_HANDLER})
+    @DependsOn({BEAN_NAME_SPRING_APPLICATION_CONTEXT_PROVIDER, BEAN_NAME_FAILURE_HANDLER})
     @ConditionalOnMissingBean(GlobalTransactionScanner.class)
     public GlobalTransactionScanner globalTransactionScanner(SeataProperties seataProperties, FailureHandler failureHandler) {
         if (LOGGER.isInfoEnabled()) {
