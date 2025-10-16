@@ -31,9 +31,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RejectedPoliciesTest {
 
-    private final int DEFAULT_CORE_POOL_SIZE = 1;
-    private final int DEFAULT_KEEP_ALIVE_TIME = 10;
-    private final int MAX_QUEUE_SIZE = 1;
+    private final int defaultCorePoolSize = 1;
+    private final int defaultKeepAliveTime = 10;
+    private final int maxQueueSize = 1;
 
     /**
      * Test runs oldest task policy.
@@ -44,12 +44,12 @@ public class RejectedPoliciesTest {
     public void testRunsOldestTaskPolicy() throws Exception {
         AtomicInteger atomicInteger = new AtomicInteger();
         ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
-                DEFAULT_CORE_POOL_SIZE,
-                DEFAULT_CORE_POOL_SIZE,
-                DEFAULT_KEEP_ALIVE_TIME,
+                defaultCorePoolSize,
+                defaultCorePoolSize,
+                defaultKeepAliveTime,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(MAX_QUEUE_SIZE),
-                new NamedThreadFactory("OldestRunsPolicy", DEFAULT_CORE_POOL_SIZE),
+                new LinkedBlockingQueue<>(maxQueueSize),
+                new NamedThreadFactory("OldestRunsPolicy", defaultCorePoolSize),
                 RejectedPolicies.runsOldestTaskPolicy());
         CountDownLatch downLatch1 = new CountDownLatch(1);
         CountDownLatch downLatch2 = new CountDownLatch(1);

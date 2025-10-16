@@ -39,7 +39,7 @@ public class ApolloMockServer {
     private MockWebServer server;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final String CONFIG_PREFIX_PATH = "/configs";
+    private final String configPrefixPath = "/configs";
 
     /**
      * Instantiates a new Apollo mock server.
@@ -53,7 +53,7 @@ public class ApolloMockServer {
         server.setDispatcher(new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                if (request.getPath().startsWith(CONFIG_PREFIX_PATH)) {
+                if (request.getPath().startsWith(configPrefixPath)) {
                     List<String> pathSegments = request.getRequestUrl().pathSegments();
                     String appId = pathSegments.get(1);
                     String cluster = pathSegments.get(2);
