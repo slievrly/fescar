@@ -29,8 +29,8 @@ import java.util.List;
 
 public class TableMetaTest {
 
-    private final String COLUMN_ID = "id";
-    private final String COLUMN_USERCODE = "userCode";
+    private static final String COLUMN_ID = "id";
+    private static final String COLUMN_USERCODE = "userCode";
 
     @Test
     public void testTableMeta() {

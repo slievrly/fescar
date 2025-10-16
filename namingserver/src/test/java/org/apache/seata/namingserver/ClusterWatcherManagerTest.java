@@ -54,10 +54,10 @@ public class ClusterWatcherManagerTest {
     @Mock
     private HttpServletRequest request;
 
-    private final String TEST_GROUP = "testGroup";
-    private final int TEST_TIMEOUT = 5000;
-    private final Long TEST_TERM = 1000L;
-    private final String TEST_CLIENT_ENDPOINT = "127.0.0.1";
+    private static final String TEST_GROUP = "testGroup";
+    private static final int TEST_TIMEOUT = 5000;
+    private static final Long TEST_TERM = 1000L;
+    private static final String TEST_CLIENT_ENDPOINT = "127.0.0.1";
 
     @BeforeEach
     void setUp() {

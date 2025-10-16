@@ -39,7 +39,7 @@ public class ApolloMockServer {
     private MockWebServer server;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final String CONFIG_PREFIX_PATH = "/configs";
+    private static final String CONFIG_PREFIX_PATH = "/configs";
 
     /**
      * Instantiates a new Apollo mock server.

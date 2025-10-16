@@ -31,8 +31,8 @@ public class ApplicationKeeper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationKeeper.class);
 
-    private final ReentrantLock LOCK = new ReentrantLock();
-    private final Condition STOP = LOCK.newCondition();
+    private static final ReentrantLock LOCK = new ReentrantLock();
+    private static final Condition STOP = LOCK.newCondition();
 
     /**
      * Instantiates a new Application keeper.
