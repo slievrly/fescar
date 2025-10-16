@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 
 /**
  * Exception serializer
@@ -66,7 +67,34 @@ public class ExceptionSerializer implements Serializer<Exception, byte[]> {
         Object result = null;
         if (bytes != null) {
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-            try (ObjectInputStream ois = new ObjectInputStream(bais)) {
+            try (ObjectInputStream ois = new ObjectInputStream(bais) {
+                @Override
+                protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                    String className = desc.getName();
+                    // Only allow Exception and related classes to be deserialized
+                    if (!isAllowedClass(className)) {
+                        throw new SecurityException(
+                                "Deserialization of class " + className + " is not allowed for security reasons");
+                    }
+                    return super.resolveClass(desc);
+                }
+
+                private boolean isAllowedClass(String className) {
+                    // Allow standard Java exception types and primitive types
+                    return className.startsWith("java.lang.Exception")
+                            || className.startsWith("java.lang.Throwable")
+                            || className.startsWith("java.lang.RuntimeException")
+                            || className.startsWith("java.lang.Error")
+                            || className.startsWith("java.io.")
+                            || className.startsWith("java.util.")
+                            || className.startsWith("java.time.")
+                            || className.equals("java.lang.String")
+                            || className.equals("java.lang.Number")
+                            || className.startsWith("[")
+                            || // Arrays
+                            className.startsWith("org.apache.seata."); // Seata classes
+                }
+            }) {
                 result = ois.readObject();
             } catch (IOException e) {
                 LOGGER.error("deserialize failed:", e);
@@ -74,6 +102,9 @@ public class ExceptionSerializer implements Serializer<Exception, byte[]> {
             } catch (ClassNotFoundException e) {
                 LOGGER.error("deserialize failed:", e);
                 throw new RuntimeException("Cannot find specified class", e);
+            } catch (SecurityException e) {
+                LOGGER.error("deserialize failed due to security restriction:", e);
+                throw new RuntimeException("Security restriction", e);
             }
         }
         return result;
