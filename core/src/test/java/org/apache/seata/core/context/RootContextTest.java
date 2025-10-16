@@ -31,9 +31,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RootContextTest {
 
-    private final String defaultXid = "default_xid";
+    private static final String DEFAULT_XID = "default_xid";
 
-    private final BranchType defaultBranchType = BranchType.AT;
+    private static final BranchType DEFAULT_BRANCH_TYPE = BranchType.AT;
 
     /**
      * Test bind and unbind.
@@ -41,8 +41,8 @@ public class RootContextTest {
     @Test
     public void testBind_And_Unbind() {
         assertThat(RootContext.unbind()).isNull();
-        RootContext.bind(defaultXid);
-        assertThat(RootContext.unbind()).isEqualTo(defaultXid);
+        RootContext.bind(DEFAULT_XID);
+        assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
 
         RootContext.unbind();
         assertThat(RootContext.getXID()).isNull();
@@ -53,9 +53,9 @@ public class RootContextTest {
      */
     @Test
     public void testGetXID() {
-        RootContext.bind(defaultXid);
-        assertThat(RootContext.getXID()).isEqualTo(defaultXid);
-        assertThat(RootContext.unbind()).isEqualTo(defaultXid);
+        RootContext.bind(DEFAULT_XID);
+        assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
+        assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
         assertThat(RootContext.getXID()).isNull();
         RootContext.unbind();
     }
@@ -118,9 +118,9 @@ public class RootContextTest {
      */
     @Test
     public void testEntries() {
-        RootContext.bind(defaultXid);
+        RootContext.bind(DEFAULT_XID);
         Map<String, Object> entries = RootContext.entries();
-        assertThat(entries.get(RootContext.KEY_XID)).isEqualTo(defaultXid);
+        assertThat(entries.get(RootContext.KEY_XID)).isEqualTo(DEFAULT_XID);
         RootContext.unbind();
     }
 
@@ -130,18 +130,18 @@ public class RootContextTest {
     @Test
     public void testBind_And_Unbind_BranchType() {
         assertThat(RootContext.unbindBranchType()).isNull();
-        RootContext.bindBranchType(defaultBranchType);
+        RootContext.bindBranchType(DEFAULT_BRANCH_TYPE);
 
         // before bind xid, branchType is null
         assertThat(RootContext.getBranchType()).isNull();
         // after bind xid, branchType is not null
-        RootContext.bind(defaultXid);
-        assertThat(RootContext.getBranchType()).isEqualTo(defaultBranchType);
+        RootContext.bind(DEFAULT_XID);
+        assertThat(RootContext.getBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
 
         // unbind xid and branchType
-        assertThat(RootContext.unbind()).isEqualTo(defaultXid);
+        assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
         assertThat(RootContext.getBranchType()).isNull();
-        assertThat(RootContext.unbindBranchType()).isEqualTo(defaultBranchType);
+        assertThat(RootContext.unbindBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
         assertThat(RootContext.getBranchType()).isNull();
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> RootContext.bindBranchType(null));
@@ -152,16 +152,16 @@ public class RootContextTest {
      */
     @Test
     public void testGetBranchType() {
-        RootContext.bindBranchType(defaultBranchType);
+        RootContext.bindBranchType(DEFAULT_BRANCH_TYPE);
 
         // before bind xid, branchType is null
         assertThat(RootContext.getBranchType()).isNull();
         // after bind xid, branchType is not null
-        RootContext.bind(defaultXid);
-        assertThat(RootContext.getBranchType()).isEqualTo(defaultBranchType);
+        RootContext.bind(DEFAULT_XID);
+        assertThat(RootContext.getBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
 
         RootContext.unbind();
-        assertThat(RootContext.unbindBranchType()).isEqualTo(defaultBranchType);
+        assertThat(RootContext.unbindBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
         assertThat(RootContext.getBranchType()).isNull();
     }
 
@@ -171,7 +171,7 @@ public class RootContextTest {
     @Test
     public void testInGlobalTransaction() {
         assertThat(RootContext.inGlobalTransaction()).isFalse();
-        RootContext.bind(defaultXid);
+        RootContext.bind(DEFAULT_XID);
         assertThat(RootContext.inGlobalTransaction()).isTrue();
         RootContext.unbind();
         assertThat(RootContext.inGlobalTransaction()).isFalse();
@@ -183,7 +183,7 @@ public class RootContextTest {
      */
     @Test
     public void testInTccBranch() {
-        RootContext.bind(defaultXid);
+        RootContext.bind(DEFAULT_XID);
         assertThat(RootContext.inTccBranch()).isFalse();
         RootContext.bindBranchType(BranchType.TCC);
         assertThat(RootContext.inTccBranch()).isTrue();
@@ -197,7 +197,7 @@ public class RootContextTest {
      */
     @Test
     public void testInSagaBranch() {
-        RootContext.bind(defaultXid);
+        RootContext.bind(DEFAULT_XID);
         assertThat(RootContext.inSagaBranch()).isFalse();
         RootContext.bindBranchType(BranchType.SAGA);
         assertThat(RootContext.inSagaBranch()).isTrue();
@@ -214,7 +214,7 @@ public class RootContextTest {
         Assertions.assertThrows(ShouldNeverHappenException.class, () -> {
             try {
                 RootContext.assertNotInGlobalTransaction();
-                RootContext.bind(defaultXid);
+                RootContext.bind(DEFAULT_XID);
                 RootContext.assertNotInGlobalTransaction();
             } finally {
                 // clear
@@ -237,8 +237,8 @@ public class RootContextTest {
     public void testBindBranchType_And_UnbindBranchType() {
         assertThat(RootContext.getBranchType()).isNull();
         assertThat(RootContext.unbindBranchType()).isNull();
-        RootContext.bindBranchType(defaultBranchType);
-        assertThat(RootContext.unbindBranchType()).isEqualTo(defaultBranchType);
+        RootContext.bindBranchType(DEFAULT_BRANCH_TYPE);
+        assertThat(RootContext.unbindBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
         assertThat(RootContext.getBranchType()).isNull();
         assertThat(RootContext.unbindBranchType()).isNull();
     }

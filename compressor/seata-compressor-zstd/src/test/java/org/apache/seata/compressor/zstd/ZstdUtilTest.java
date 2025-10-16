@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class ZstdUtilTest {
 
-    private final int maxCompressedSize = 4 * 1024 * 1024; // 4MB
+    private static final int MAX_COMPRESSED_SIZE = 4 * 1024 * 1024; // 4MB
 
     @Test
     public void test_compress() {
@@ -65,14 +65,14 @@ public class ZstdUtilTest {
     @Test
     public void test_decompress_with_len() {
         Assertions.assertDoesNotThrow(() -> {
-            byte[] data = new byte[maxCompressedSize + 1];
+            byte[] data = new byte[MAX_COMPRESSED_SIZE + 1];
             for (int i = 0; i < data.length; i++) {
                 data[i] = (byte) ('A' + i % 26);
             }
             byte[] compressedData = Zstd.compress(data);
             ZstdUtil.decompress(compressedData);
         });
-        int len = maxCompressedSize / 2;
+        int len = MAX_COMPRESSED_SIZE / 2;
         byte[] data = new byte[len];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) ('A' + i % 26);
@@ -106,6 +106,6 @@ public class ZstdUtilTest {
                 frameHeaderDescriptor.length + frameContentSize.length,
                 fakeContent.length);
         Assertions.assertThrows(IllegalArgumentException.class, () -> ZstdUtil.decompress(frameContent));
-        Assertions.assertTrue(Zstd.decompressedSize(frameContent) > maxCompressedSize);
+        Assertions.assertTrue(Zstd.decompressedSize(frameContent) > MAX_COMPRESSED_SIZE);
     }
 }

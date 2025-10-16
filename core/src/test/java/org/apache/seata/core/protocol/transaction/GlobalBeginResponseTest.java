@@ -26,22 +26,22 @@ import org.junit.jupiter.api.Test;
  *
  **/
 public class GlobalBeginResponseTest {
-    private final String xid = "test_xid";
-    private final String extraData = "test_extra_data";
-    private final ResultCode resultCode = ResultCode.Success;
+    private static final String XID = "test_xid";
+    private static final String EXTRA_DATA = "test_extra_data";
+    private static final ResultCode RESULT_CODE = ResultCode.Success;
 
     @Test
     public void testGetSetXid() {
         GlobalBeginResponse globalBeginResponse = new GlobalBeginResponse();
-        globalBeginResponse.setXid(xid);
-        Assertions.assertEquals(xid, globalBeginResponse.getXid());
+        globalBeginResponse.setXid(XID);
+        Assertions.assertEquals(XID, globalBeginResponse.getXid());
     }
 
     @Test
     public void testGetSetExtraData() {
         GlobalBeginResponse globalBeginResponse = new GlobalBeginResponse();
-        globalBeginResponse.setExtraData(extraData);
-        Assertions.assertEquals(extraData, globalBeginResponse.getExtraData());
+        globalBeginResponse.setExtraData(EXTRA_DATA);
+        Assertions.assertEquals(EXTRA_DATA, globalBeginResponse.getExtraData());
     }
 
     @Test

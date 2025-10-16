@@ -57,7 +57,7 @@ public class GrpcTest {
 
     private final ServerInterceptor mockServerInterceptor =
             mock(ServerInterceptor.class, delegatesTo(new ServerTransactionInterceptor()));
-    private final String xid = "192.168.0.1:8091:10086";
+    private static final String XID = "192.168.0.1:8091:10086";
 
     @Test
     public void clientHeaderDeliveredToServer() throws Exception {
@@ -101,7 +101,7 @@ public class GrpcTest {
                 .build());
         ContextRpcGrpc.ContextRpcFutureStub stub =
                 ContextRpcGrpc.newFutureStub(ClientInterceptors.intercept(channel, new ClientTransactionInterceptor()));
-        RootContext.bind(xid);
+        RootContext.bind(XID);
         RootContext.bindBranchType(BranchType.TCC);
         ListenableFuture<Response> future =
                 stub.contextRpc(Request.newBuilder().setName("seata").build());
@@ -110,11 +110,11 @@ public class GrpcTest {
         ArgumentCaptor<Metadata> metadataCaptor = ArgumentCaptor.forClass(Metadata.class);
         verify(mockServerInterceptor)
                 .interceptCall(ArgumentMatchers.any(), metadataCaptor.capture(), ArgumentMatchers.any());
-        assertEquals(xid, metadataCaptor.getValue().get(GrpcHeaderKey.XID_HEADER_KEY));
+        assertEquals(XID, metadataCaptor.getValue().get(GrpcHeaderKey.XID_HEADER_KEY));
         assertEquals(BranchType.TCC.name(), metadataCaptor.getValue().get(GrpcHeaderKey.BRANCH_HEADER_KEY));
 
         countDownLatch.await();
-        assertEquals(xid, context[0]);
+        assertEquals(XID, context[0]);
         assertEquals(BranchType.TCC.name(), context[1]);
     }
 }

@@ -28,11 +28,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ContextCoreTest {
 
-    private final String firstKey = "first_key";
-    private final String firstValue = "first_value";
-    private final String secondKey = "second_key";
-    private final String secondValue = "second_value";
-    private final String notExistKey = "not_exist_key";
+    private static final String FIRST_KEY = "first_key";
+    private static final String FIRST_VALUE = "first_value";
+    private static final String SECOND_KEY = "second_key";
+    private static final String SECOND_VALUE = "second_value";
+    private static final String NOT_EXIST_KEY = "not_exist_key";
 
     /**
      * Test put.
@@ -40,13 +40,13 @@ public class ContextCoreTest {
     @Test
     public void testPut() {
         ContextCore load = ContextCoreLoader.load();
-        assertThat(load.put(firstKey, firstValue)).isNull();
-        assertThat(load.put(secondKey, secondValue)).isNull();
-        assertThat(load.put(firstKey, secondValue)).isEqualTo(firstValue);
-        assertThat(load.put(secondKey, firstValue)).isEqualTo(secondValue);
+        assertThat(load.put(FIRST_KEY, FIRST_VALUE)).isNull();
+        assertThat(load.put(SECOND_KEY, SECOND_VALUE)).isNull();
+        assertThat(load.put(FIRST_KEY, SECOND_VALUE)).isEqualTo(FIRST_VALUE);
+        assertThat(load.put(SECOND_KEY, FIRST_VALUE)).isEqualTo(SECOND_VALUE);
         // clear keys
-        load.remove(firstKey);
-        load.remove(secondKey);
+        load.remove(FIRST_KEY);
+        load.remove(SECOND_KEY);
     }
 
     /**
@@ -55,19 +55,19 @@ public class ContextCoreTest {
     @Test
     public void testGet() {
         ContextCore load = ContextCoreLoader.load();
-        load.put(firstKey, firstValue);
-        load.put(secondKey, firstValue);
-        assertThat(load.get(firstKey)).isEqualTo(firstValue);
-        assertThat(load.get(secondKey)).isEqualTo(firstValue);
-        load.put(firstKey, secondValue);
-        load.put(secondKey, secondValue);
-        assertThat(load.get(firstKey)).isEqualTo(secondValue);
-        assertThat(load.get(secondKey)).isEqualTo(secondValue);
-        assertThat(load.get(notExistKey)).isNull();
+        load.put(FIRST_KEY, FIRST_VALUE);
+        load.put(SECOND_KEY, FIRST_VALUE);
+        assertThat(load.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
+        assertThat(load.get(SECOND_KEY)).isEqualTo(FIRST_VALUE);
+        load.put(FIRST_KEY, SECOND_VALUE);
+        load.put(SECOND_KEY, SECOND_VALUE);
+        assertThat(load.get(FIRST_KEY)).isEqualTo(SECOND_VALUE);
+        assertThat(load.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
+        assertThat(load.get(NOT_EXIST_KEY)).isNull();
         // clear keys
-        load.remove(firstKey);
-        load.remove(secondKey);
-        load.remove(notExistKey);
+        load.remove(FIRST_KEY);
+        load.remove(SECOND_KEY);
+        load.remove(NOT_EXIST_KEY);
     }
 
     /**
@@ -76,14 +76,14 @@ public class ContextCoreTest {
     @Test
     public void testEntries() {
         ContextCore load = ContextCoreLoader.load();
-        load.put(firstKey, firstValue);
-        load.put(secondKey, firstValue);
+        load.put(FIRST_KEY, FIRST_VALUE);
+        load.put(SECOND_KEY, FIRST_VALUE);
         Map<String, Object> entries = load.entries();
-        assertThat(entries.get(firstKey)).isEqualTo(firstValue);
-        assertThat(entries.get(secondKey)).isEqualTo(firstValue);
-        load.remove(firstKey);
-        load.remove(secondKey);
-        load.remove(notExistKey);
+        assertThat(entries.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
+        assertThat(entries.get(SECOND_KEY)).isEqualTo(FIRST_VALUE);
+        load.remove(FIRST_KEY);
+        load.remove(SECOND_KEY);
+        load.remove(NOT_EXIST_KEY);
     }
 
     /**
@@ -92,10 +92,10 @@ public class ContextCoreTest {
     @Test
     public void testRemove() {
         ContextCore load = ContextCoreLoader.load();
-        load.put(firstKey, firstValue);
-        load.put(secondKey, secondValue);
-        assertThat(load.remove(firstKey)).isEqualTo(firstValue);
-        assertThat(load.remove(secondKey)).isEqualTo(secondValue);
-        assertThat(load.remove(notExistKey)).isNull();
+        load.put(FIRST_KEY, FIRST_VALUE);
+        load.put(SECOND_KEY, SECOND_VALUE);
+        assertThat(load.remove(FIRST_KEY)).isEqualTo(FIRST_VALUE);
+        assertThat(load.remove(SECOND_KEY)).isEqualTo(SECOND_VALUE);
+        assertThat(load.remove(NOT_EXIST_KEY)).isNull();
     }
 }
