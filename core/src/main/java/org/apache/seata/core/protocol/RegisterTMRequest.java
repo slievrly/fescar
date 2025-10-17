@@ -35,6 +35,11 @@ public class RegisterTMRequest extends AbstractIdentifyRequest implements Serial
     public static final String UDATA_TIMESTAMP = "timestamp";
     public static final String UDATA_AUTH_VERSION = "authVersion";
 
+    private String accessKey;
+    private String digest;
+    private Long timestamp;
+    private String authVersion;
+
     /**
      * Instantiates a new Register tm request.
      */
@@ -78,6 +83,38 @@ public class RegisterTMRequest extends AbstractIdentifyRequest implements Serial
      */
     public RegisterTMRequest(String applicationId, String transactionServiceGroup) {
         this(applicationId, transactionServiceGroup, null);
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getDigest() {
+        return digest;
+    }
+
+    public void setDigest(String digest) {
+        this.digest = digest;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getAuthVersion() {
+        return authVersion;
+    }
+
+    public void setAuthVersion(String authVersion) {
+        this.authVersion = authVersion;
     }
 
     @Override

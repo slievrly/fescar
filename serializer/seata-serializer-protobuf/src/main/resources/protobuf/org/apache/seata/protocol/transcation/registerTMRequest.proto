@@ -27,4 +27,8 @@ option java_package = "org.apache.seata.serializer.protobuf.generated";
 // PublishRequest is a publish request.
 message RegisterTMRequestProto {
     AbstractIdentifyRequestProto abstractIdentifyRequest = 1;
+    string accessKey = 2;
+    string digest = 3;
+    int64 timestamp = 4;
+    string authVersion = 5;
 }

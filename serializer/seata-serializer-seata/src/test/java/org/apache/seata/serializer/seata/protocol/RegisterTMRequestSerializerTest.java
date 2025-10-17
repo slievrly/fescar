@@ -71,6 +71,62 @@ public class RegisterTMRequestSerializerTest {
     }
 
     /**
+     * Test codec with HMAC authentication fields.
+     */
+    @Test
+    public void test_codec_with_hmac_fields() {
+        RegisterTMRequest registerTMRequest = new RegisterTMRequest();
+        registerTMRequest.setApplicationId("testApp");
+        registerTMRequest.setExtraData("extra");
+        registerTMRequest.setTransactionServiceGroup("testGroup");
+        registerTMRequest.setVersion("2.0");
+        registerTMRequest.setAccessKey("testAccessKey");
+        registerTMRequest.setDigest("testDigest");
+        registerTMRequest.setTimestamp(System.currentTimeMillis());
+        registerTMRequest.setAuthVersion("V4");
+
+        byte[] body = seataSerializer.serialize(registerTMRequest);
+
+        RegisterTMRequest registerTMRequest2 = seataSerializer.deserialize(body);
+
+        assertThat(registerTMRequest2.getApplicationId()).isEqualTo(registerTMRequest.getApplicationId());
+        assertThat(registerTMRequest2.getExtraData()).isEqualTo(registerTMRequest.getExtraData());
+        assertThat(registerTMRequest2.getTransactionServiceGroup())
+                .isEqualTo(registerTMRequest.getTransactionServiceGroup());
+        assertThat(registerTMRequest2.getVersion()).isEqualTo(registerTMRequest.getVersion());
+        assertThat(registerTMRequest2.getAccessKey()).isEqualTo(registerTMRequest.getAccessKey());
+        assertThat(registerTMRequest2.getDigest()).isEqualTo(registerTMRequest.getDigest());
+        assertThat(registerTMRequest2.getTimestamp()).isEqualTo(registerTMRequest.getTimestamp());
+        assertThat(registerTMRequest2.getAuthVersion()).isEqualTo(registerTMRequest.getAuthVersion());
+    }
+
+    /**
+     * Test backward compatibility - old message without HMAC fields can be decoded.
+     */
+    @Test
+    public void test_backward_compatibility_old_message() {
+        RegisterTMRequest registerTMRequest = new RegisterTMRequest();
+        registerTMRequest.setApplicationId("oldApp");
+        registerTMRequest.setExtraData("oldExtra");
+        registerTMRequest.setTransactionServiceGroup("oldGroup");
+        registerTMRequest.setVersion("1.0");
+
+        byte[] body = seataSerializer.serialize(registerTMRequest);
+
+        RegisterTMRequest registerTMRequest2 = seataSerializer.deserialize(body);
+
+        assertThat(registerTMRequest2.getApplicationId()).isEqualTo(registerTMRequest.getApplicationId());
+        assertThat(registerTMRequest2.getExtraData()).isEqualTo(registerTMRequest.getExtraData());
+        assertThat(registerTMRequest2.getTransactionServiceGroup())
+                .isEqualTo(registerTMRequest.getTransactionServiceGroup());
+        assertThat(registerTMRequest2.getVersion()).isEqualTo(registerTMRequest.getVersion());
+        assertThat(registerTMRequest2.getAccessKey()).isNull();
+        assertThat(registerTMRequest2.getDigest()).isNull();
+        assertThat(registerTMRequest2.getTimestamp()).isNull();
+        assertThat(registerTMRequest2.getAuthVersion()).isNull();
+    }
+
+    /**
      * Constructor without arguments
      **/
     @BeforeAll
