@@ -19,6 +19,7 @@ package org.apache.seata.common.util;
 import okhttp3.Protocol;
 import okhttp3.Response;
 import org.apache.seata.common.executor.HttpCallback;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class Http5ClientUtilTest {
 
     @Test
+    @Disabled("Flaky test - depends on external HTTP services")
     void testDoPostHttp_param_onSuccess() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -99,6 +101,7 @@ class Http5ClientUtilTest {
     }
 
     @Test
+    @Disabled("Flaky test - depends on external HTTP services")
     void testDoPostHttp_body_onSuccess() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -158,6 +161,7 @@ class Http5ClientUtilTest {
     }
 
     @Test
+    @Disabled("Flaky test - depends on external HTTP services")
     void testDoPostHttp_param_onSuccess_forceHttp1() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -191,6 +195,7 @@ class Http5ClientUtilTest {
     }
 
     @Test
+    @Disabled("Flaky test - depends on external HTTP services")
     void testDoGetHttp_onSuccess() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -221,6 +226,7 @@ class Http5ClientUtilTest {
     }
 
     @Test
+    @Disabled("Flaky test - depends on external HTTP services")
     void testDoPostHttp_body_onSuccess_forceHttp1() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
 
