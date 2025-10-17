@@ -40,11 +40,23 @@ public class RegisterTMRequestConvertor implements PbConvertor<RegisterTMRequest
                 .setVersion(registerTMRequest.getVersion())
                 .build();
 
-        RegisterTMRequestProto result = RegisterTMRequestProto.newBuilder()
-                .setAbstractIdentifyRequest(abstractIdentifyRequestProto)
-                .build();
+        RegisterTMRequestProto.Builder builder =
+                RegisterTMRequestProto.newBuilder().setAbstractIdentifyRequest(abstractIdentifyRequestProto);
 
-        return result;
+        if (registerTMRequest.getAccessKey() != null) {
+            builder.setAccessKey(registerTMRequest.getAccessKey());
+        }
+        if (registerTMRequest.getDigest() != null) {
+            builder.setDigest(registerTMRequest.getDigest());
+        }
+        if (registerTMRequest.getTimestamp() != null) {
+            builder.setTimestamp(registerTMRequest.getTimestamp());
+        }
+        if (registerTMRequest.getAuthVersion() != null) {
+            builder.setAuthVersion(registerTMRequest.getAuthVersion());
+        }
+
+        return builder.build();
     }
 
     @Override
@@ -56,6 +68,23 @@ public class RegisterTMRequestConvertor implements PbConvertor<RegisterTMRequest
         registerRMRequest.setExtraData(abstractIdentifyRequest.getExtraData());
         registerRMRequest.setTransactionServiceGroup(abstractIdentifyRequest.getTransactionServiceGroup());
         registerRMRequest.setVersion(abstractIdentifyRequest.getVersion());
+
+        String accessKey = registerTMRequestProto.getAccessKey();
+        if (accessKey != null && !accessKey.isEmpty()) {
+            registerRMRequest.setAccessKey(accessKey);
+        }
+        String digest = registerTMRequestProto.getDigest();
+        if (digest != null && !digest.isEmpty()) {
+            registerRMRequest.setDigest(digest);
+        }
+        long timestamp = registerTMRequestProto.getTimestamp();
+        if (timestamp > 0) {
+            registerRMRequest.setTimestamp(timestamp);
+        }
+        String authVersion = registerTMRequestProto.getAuthVersion();
+        if (authVersion != null && !authVersion.isEmpty()) {
+            registerRMRequest.setAuthVersion(authVersion);
+        }
 
         return registerRMRequest;
     }

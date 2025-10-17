@@ -42,4 +42,56 @@ public class RegisterTMRequestConvertorTest {
         assertThat((real.getExtraData())).isEqualTo(registerRMRequest.getExtraData());
         assertThat((real.getApplicationId())).isEqualTo(registerRMRequest.getApplicationId());
     }
+
+    @Test
+    public void convert2Proto_withHmacFields() {
+
+        RegisterTMRequest registerRMRequest = new RegisterTMRequest();
+        registerRMRequest.setVersion("2.0");
+        registerRMRequest.setTransactionServiceGroup("testGroup");
+        registerRMRequest.setExtraData("extraData");
+        registerRMRequest.setApplicationId("testApp");
+        registerRMRequest.setAccessKey("testAccessKey");
+        registerRMRequest.setDigest("testDigest");
+        registerRMRequest.setTimestamp(1234567890L);
+        registerRMRequest.setAuthVersion("V4");
+
+        RegisterTMRequestConvertor convertor = new RegisterTMRequestConvertor();
+        RegisterTMRequestProto proto = convertor.convert2Proto(registerRMRequest);
+        RegisterTMRequest real = convertor.convert2Model(proto);
+
+        assertThat((real.getTypeCode())).isEqualTo(registerRMRequest.getTypeCode());
+        assertThat((real.getVersion())).isEqualTo(registerRMRequest.getVersion());
+        assertThat((real.getTransactionServiceGroup())).isEqualTo(registerRMRequest.getTransactionServiceGroup());
+        assertThat((real.getExtraData())).isEqualTo(registerRMRequest.getExtraData());
+        assertThat((real.getApplicationId())).isEqualTo(registerRMRequest.getApplicationId());
+        assertThat((real.getAccessKey())).isEqualTo(registerRMRequest.getAccessKey());
+        assertThat((real.getDigest())).isEqualTo(registerRMRequest.getDigest());
+        assertThat((real.getTimestamp())).isEqualTo(registerRMRequest.getTimestamp());
+        assertThat((real.getAuthVersion())).isEqualTo(registerRMRequest.getAuthVersion());
+    }
+
+    @Test
+    public void convert2Proto_backwardCompatibility() {
+
+        RegisterTMRequest registerRMRequest = new RegisterTMRequest();
+        registerRMRequest.setVersion("1.0");
+        registerRMRequest.setTransactionServiceGroup("oldGroup");
+        registerRMRequest.setExtraData("oldExtra");
+        registerRMRequest.setApplicationId("oldApp");
+
+        RegisterTMRequestConvertor convertor = new RegisterTMRequestConvertor();
+        RegisterTMRequestProto proto = convertor.convert2Proto(registerRMRequest);
+        RegisterTMRequest real = convertor.convert2Model(proto);
+
+        assertThat((real.getTypeCode())).isEqualTo(registerRMRequest.getTypeCode());
+        assertThat((real.getVersion())).isEqualTo(registerRMRequest.getVersion());
+        assertThat((real.getTransactionServiceGroup())).isEqualTo(registerRMRequest.getTransactionServiceGroup());
+        assertThat((real.getExtraData())).isEqualTo(registerRMRequest.getExtraData());
+        assertThat((real.getApplicationId())).isEqualTo(registerRMRequest.getApplicationId());
+        assertThat((real.getAccessKey())).isNull();
+        assertThat((real.getDigest())).isNull();
+        assertThat((real.getTimestamp())).isNull();
+        assertThat((real.getAuthVersion())).isNull();
+    }
 }

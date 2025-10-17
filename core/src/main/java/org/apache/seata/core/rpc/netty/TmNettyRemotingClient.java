@@ -274,6 +274,22 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
     protected Function<String, NettyPoolKey> getPoolKeyFunction() {
         return severAddress -> {
             RegisterTMRequest message = new RegisterTMRequest(applicationId, transactionServiceGroup, getExtraData());
+
+            String ip = NetUtil.getLocalIp();
+            long timestamp = System.currentTimeMillis();
+            String digestSource;
+            if (StringUtils.isEmpty(ip)) {
+                digestSource = transactionServiceGroup + ",127.0.0.1," + timestamp;
+            } else {
+                digestSource = transactionServiceGroup + "," + ip + "," + timestamp;
+            }
+            String digest = signer.sign(digestSource, secretKey);
+
+            message.setAccessKey(accessKey);
+            message.setDigest(digest);
+            message.setTimestamp(timestamp);
+            message.setAuthVersion(signer.getSignVersion());
+
             return new NettyPoolKey(NettyPoolKey.TransactionRole.TMROLE, severAddress, message);
         };
     }
