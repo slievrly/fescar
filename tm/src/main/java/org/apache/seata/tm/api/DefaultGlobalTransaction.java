@@ -237,7 +237,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
         // Participants don't initiate transactions, they just join existing ones
         if (role != GlobalTransactionRole.Launcher) {
-            assertXIDNotNull();
+            assertXidNotNull();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Ignore Begin(): just involved in global transaction [{}]", xid);
             }
@@ -245,7 +245,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         }
 
         // Ensure this is a clean transaction start
-        assertXIDNull();
+        assertXidNull();
         String currentXid = RootContext.getXID();
         if (currentXid != null) {
             throw new IllegalStateException("Global transaction already exists,"
@@ -307,7 +307,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
             return;
         }
 
-        assertXIDNotNull();
+        assertXidNotNull();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("transaction {} will be commit", xid);
         }
@@ -394,7 +394,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
             return;
         }
 
-        assertXIDNotNull();
+        assertXidNotNull();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("transaction {} will be rollback", xid);
         }
@@ -536,7 +536,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
     @Override
     public void globalReport(GlobalStatus globalStatus) throws TransactionException {
-        assertXIDNotNull();
+        assertXidNotNull();
 
         if (globalStatus == null) {
             throw new IllegalStateException();
@@ -567,13 +567,13 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         return createTime;
     }
 
-    private void assertXIDNotNull() {
+    private void assertXidNotNull() {
         if (xid == null) {
             throw new IllegalStateException();
         }
     }
 
-    private void assertXIDNull() {
+    private void assertXidNull() {
         if (xid != null) {
             throw new IllegalStateException();
         }

@@ -26,15 +26,15 @@ import org.junit.jupiter.api.Test;
  *
  **/
 public class GlobalBeginResponseTest {
-    private final String XID = "test_xid";
+    private final String xid = "test_xid";
     private final String EXTRA_DATA = "test_extra_data";
     private final ResultCode RESULT_CODE = ResultCode.Success;
 
     @Test
     public void testGetSetXid() {
         GlobalBeginResponse globalBeginResponse = new GlobalBeginResponse();
-        globalBeginResponse.setXid(XID);
-        Assertions.assertEquals(XID, globalBeginResponse.getXid());
+        globalBeginResponse.setXid(xid);
+        Assertions.assertEquals(xid, globalBeginResponse.getXid());
     }
 
     @Test

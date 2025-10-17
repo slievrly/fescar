@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RootContextTest {
 
-    private final String DEFAULT_XID = "default_xid";
+    private final String defaultXid = "default_xid";
 
     private final BranchType DEFAULT_BRANCH_TYPE = BranchType.AT;
 
@@ -41,8 +41,8 @@ public class RootContextTest {
     @Test
     public void testBind_And_Unbind() {
         assertThat(RootContext.unbind()).isNull();
-        RootContext.bind(DEFAULT_XID);
-        assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
+        RootContext.bind(defaultXid);
+        assertThat(RootContext.unbind()).isEqualTo(defaultXid);
 
         RootContext.unbind();
         assertThat(RootContext.getXID()).isNull();
@@ -53,9 +53,9 @@ public class RootContextTest {
      */
     @Test
     public void testGetXID() {
-        RootContext.bind(DEFAULT_XID);
-        assertThat(RootContext.getXID()).isEqualTo(DEFAULT_XID);
-        assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
+        RootContext.bind(defaultXid);
+        assertThat(RootContext.getXID()).isEqualTo(defaultXid);
+        assertThat(RootContext.unbind()).isEqualTo(defaultXid);
         assertThat(RootContext.getXID()).isNull();
         RootContext.unbind();
     }
@@ -118,9 +118,9 @@ public class RootContextTest {
      */
     @Test
     public void testEntries() {
-        RootContext.bind(DEFAULT_XID);
+        RootContext.bind(defaultXid);
         Map<String, Object> entries = RootContext.entries();
-        assertThat(entries.get(RootContext.KEY_XID)).isEqualTo(DEFAULT_XID);
+        assertThat(entries.get(RootContext.KEY_XID)).isEqualTo(defaultXid);
         RootContext.unbind();
     }
 
@@ -135,11 +135,11 @@ public class RootContextTest {
         // before bind xid, branchType is null
         assertThat(RootContext.getBranchType()).isNull();
         // after bind xid, branchType is not null
-        RootContext.bind(DEFAULT_XID);
+        RootContext.bind(defaultXid);
         assertThat(RootContext.getBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
 
         // unbind xid and branchType
-        assertThat(RootContext.unbind()).isEqualTo(DEFAULT_XID);
+        assertThat(RootContext.unbind()).isEqualTo(defaultXid);
         assertThat(RootContext.getBranchType()).isNull();
         assertThat(RootContext.unbindBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
         assertThat(RootContext.getBranchType()).isNull();
@@ -157,7 +157,7 @@ public class RootContextTest {
         // before bind xid, branchType is null
         assertThat(RootContext.getBranchType()).isNull();
         // after bind xid, branchType is not null
-        RootContext.bind(DEFAULT_XID);
+        RootContext.bind(defaultXid);
         assertThat(RootContext.getBranchType()).isEqualTo(DEFAULT_BRANCH_TYPE);
 
         RootContext.unbind();
@@ -171,7 +171,7 @@ public class RootContextTest {
     @Test
     public void testInGlobalTransaction() {
         assertThat(RootContext.inGlobalTransaction()).isFalse();
-        RootContext.bind(DEFAULT_XID);
+        RootContext.bind(defaultXid);
         assertThat(RootContext.inGlobalTransaction()).isTrue();
         RootContext.unbind();
         assertThat(RootContext.inGlobalTransaction()).isFalse();
@@ -183,7 +183,7 @@ public class RootContextTest {
      */
     @Test
     public void testInTccBranch() {
-        RootContext.bind(DEFAULT_XID);
+        RootContext.bind(defaultXid);
         assertThat(RootContext.inTccBranch()).isFalse();
         RootContext.bindBranchType(BranchType.TCC);
         assertThat(RootContext.inTccBranch()).isTrue();
@@ -197,7 +197,7 @@ public class RootContextTest {
      */
     @Test
     public void testInSagaBranch() {
-        RootContext.bind(DEFAULT_XID);
+        RootContext.bind(defaultXid);
         assertThat(RootContext.inSagaBranch()).isFalse();
         RootContext.bindBranchType(BranchType.SAGA);
         assertThat(RootContext.inSagaBranch()).isTrue();
@@ -214,7 +214,7 @@ public class RootContextTest {
         Assertions.assertThrows(ShouldNeverHappenException.class, () -> {
             try {
                 RootContext.assertNotInGlobalTransaction();
-                RootContext.bind(DEFAULT_XID);
+                RootContext.bind(defaultXid);
                 RootContext.assertNotInGlobalTransaction();
             } finally {
                 // clear
