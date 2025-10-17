@@ -199,7 +199,7 @@ public class NetUtilTest {
     public void testIsValidIp() {
         String localIp = "127.0.0.1";
         String someIp = "8.210.212.91";
-        String someHostName = "seata.io";
+        String someHostName = "localhost";
         String unknownHost = "knownHost";
         assertThat(NetUtil.isValidIp(localIp, true)).isTrue();
         assertThat(NetUtil.isValidIp(localIp, false)).isFalse();
@@ -208,7 +208,7 @@ public class NetUtilTest {
         assertThat(NetUtil.isValidIp(someIp, false)).isTrue();
 
         assertThat(NetUtil.isValidIp(someHostName, true)).isTrue();
-        assertThat(NetUtil.isValidIp(someHostName, false)).isTrue();
+        assertThat(NetUtil.isValidIp(someHostName, false)).isFalse();
 
         assertThatThrownBy(() -> {
                     NetUtil.isValidIp(unknownHost, false);
