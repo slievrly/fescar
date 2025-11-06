@@ -17,8 +17,8 @@
 package org.apache.seata.common.util;
 
 import java.net.NetworkInterface;
+import java.security.SecureRandom;
 import java.util.Enumeration;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class IdWorker {
@@ -179,6 +179,6 @@ public class IdWorker {
      * @return workerId
      */
     private long generateRandomWorkerId() {
-        return new Random().nextInt(maxWorkerId + 1);
+        return new SecureRandom().nextInt(maxWorkerId + 1);
     }
 }
