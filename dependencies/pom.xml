@@ -186,6 +186,17 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Groovy BOM: declared before spring-boot-dependencies so that
+                 Spring Boot cannot downgrade Groovy below the version Seata requires.
+                 Groovy 4.0.27+ is needed for JDK 25 support (class file major version 69). -->
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-bom</artifactId>
+                <version>${groovy.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- spring-boot -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -214,10 +225,6 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.groovy</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
