@@ -38,7 +38,7 @@ public class CustomDeserializer extends JsonDeserializer<Class<?>> {
             className = currentPackage + className.substring(oldPackage.length());
         }
         // The storage structure of vgroup is a HashMap.
-        if (className.startsWith("org.apache.seata.") || className.equals("java.util.HashMap")) {
+        if (className.startsWith("org.apache.seata.") || "java.util.HashMap".equals(className)) {
             try {
                 return Class.forName(className);
             } catch (ClassNotFoundException e) {
