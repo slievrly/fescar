@@ -17,9 +17,10 @@
 package org.apache.seata.core.compressor;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 /**
- * Byte array output with a maximum size checked before each write.
+ * Byte array output whose size and backing capacity are bounded before each write.
  */
 public class BoundedByteArrayOutputStream extends ByteArrayOutputStream {
 
@@ -32,7 +33,7 @@ public class BoundedByteArrayOutputStream extends ByteArrayOutputStream {
 
     @Override
     public synchronized void write(int value) {
-        checkSize(1);
+        ensureCapacityForWrite(1);
         super.write(value);
     }
 
@@ -41,13 +42,18 @@ public class BoundedByteArrayOutputStream extends ByteArrayOutputStream {
         if (offset < 0 || length < 0 || offset > bytes.length - length) {
             throw new IndexOutOfBoundsException();
         }
-        checkSize(length);
+        ensureCapacityForWrite(length);
         super.write(bytes, offset, length);
     }
 
-    private void checkSize(int length) {
+    private void ensureCapacityForWrite(int length) {
         if (length > maxOutputSize - count) {
             throw new IllegalArgumentException("Decompressed data exceeds maximum size: " + maxOutputSize);
+        }
+        int minCapacity = count + length;
+        if (minCapacity > buf.length) {
+            int newCapacity = (int) Math.min(maxOutputSize, Math.max((long) buf.length * 2, minCapacity));
+            buf = Arrays.copyOf(buf, newCapacity);
         }
     }
 }

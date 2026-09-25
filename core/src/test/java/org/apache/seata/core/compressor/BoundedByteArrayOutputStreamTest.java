@@ -18,6 +18,8 @@ package org.apache.seata.core.compressor;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class BoundedByteArrayOutputStreamTest {
@@ -33,6 +35,71 @@ class BoundedByteArrayOutputStreamTest {
         out.write(new byte[0], 0, 0);
         assertThrows(IndexOutOfBoundsException.class, () -> out.write(new byte[1], 0, Integer.MAX_VALUE));
         assertThrows(IllegalArgumentException.class, () -> new BoundedByteArrayOutputStream(-1));
+    }
+
+    @Test
+    void capsSingleByteGrowthAtNonPowerOfTwoLimit() {
+        InspectableStream out = new InspectableStream(8193);
+        byte[] bytes = new byte[8193];
+        Arrays.fill(bytes, (byte) 7);
+        out.write(bytes, 0, 8192);
+        out.write(7);
+        assertEquals(8193, out.capacity());
+        assertArrayEquals(bytes, out.toByteArray());
+        assertThrows(IllegalArgumentException.class, () -> out.write(8));
+        assertEquals(8193, out.capacity());
+        assertArrayEquals(bytes, out.toByteArray());
+    }
+
+    @Test
+    void capsBulkGrowthAtNonPowerOfTwoLimit() {
+        InspectableStream out = new InspectableStream(10000);
+        byte[] bytes = new byte[10000];
+        Arrays.fill(bytes, (byte) 3);
+        out.write(bytes, 0, 8192);
+        out.write(bytes, 8192, bytes.length - 8192);
+        assertEquals(10000, out.capacity());
+        assertArrayEquals(bytes, out.toByteArray());
+        assertThrows(IllegalArgumentException.class, () -> out.write(bytes, 0, 1));
+        assertEquals(10000, out.capacity());
+        assertArrayEquals(bytes, out.toByteArray());
+    }
+
+    @Test
+    void capsGrowthAfterLargeWrites() {
+        int limit = 8 * 1024 * 1024;
+        InspectableStream out = new InspectableStream(limit);
+        byte[] bytes = new byte[3 * 1024 * 1024];
+        Arrays.fill(bytes, (byte) 5);
+        out.write(bytes, 0, bytes.length);
+        out.write(5);
+        out.write(bytes, 0, bytes.length);
+        assertEquals(2 * bytes.length + 1, out.size());
+        assertTrue(out.capacity() >= out.size());
+        assertTrue(out.capacity() <= limit);
+        byte[] expected = new byte[out.size()];
+        Arrays.fill(expected, (byte) 5);
+        assertArrayEquals(expected, out.toByteArray());
+    }
+
+    @Test
+    void zeroLimitDoesNotAllocateOrAcceptData() {
+        InspectableStream out = new InspectableStream(0);
+        out.write(new byte[0], 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> out.write(1));
+        assertThrows(IllegalArgumentException.class, () -> out.write(new byte[1], 0, 1));
+        assertEquals(0, out.size());
+        assertEquals(0, out.capacity());
+    }
+
+    private static class InspectableStream extends BoundedByteArrayOutputStream {
+        InspectableStream(int maxOutputSize) {
+            super(maxOutputSize);
+        }
+
+        int capacity() {
+            return buf.length;
+        }
     }
 
     @Test
