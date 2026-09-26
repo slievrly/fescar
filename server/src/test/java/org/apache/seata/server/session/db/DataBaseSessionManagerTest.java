@@ -18,7 +18,6 @@ package org.apache.seata.server.session.db;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.seata.common.XID;
-import org.apache.seata.common.util.IOUtil;
 import org.apache.seata.common.util.UUIDGenerator;
 import org.apache.seata.core.exception.TransactionException;
 import org.apache.seata.core.model.BranchStatus;
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
 import java.sql.Connection;
@@ -66,7 +66,8 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
     public static void start(ApplicationContext context) throws Exception {
         // Unit test triggered a bug in Druid, see the issue https://github.com/alibaba/druid/issues/4936
         DataBaseSessionManager tempSessionManager = new DataBaseSessionManager();
-        DataBaseTransactionStoreManager transactionStoreManager = DataBaseTransactionStoreManager.getInstance();
+        DataBaseTransactionStoreManager transactionStoreManager =
+                Mockito.mock(DataBaseTransactionStoreManager.class, Mockito.CALLS_REAL_METHODS);
 
         dataSource = new BasicDataSource();
         dataSource.setDriverClassName("org.h2.Driver");
@@ -74,6 +75,7 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
         dataSource.setUsername("sa");
         dataSource.setPassword("");
 
+        prepareTable(dataSource);
         logStoreDataBaseDAO = new LogStoreDataBaseDAO(dataSource);
         logStoreDataBaseDAO.setDbType("h2");
         logStoreDataBaseDAO.setGlobalTable("global_table");
@@ -84,38 +86,17 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
 
         tempSessionManager.setTransactionStoreManager(transactionStoreManager);
         sessionManager = tempSessionManager;
-
-        prepareTable(dataSource);
-
-        logStoreDataBaseDAO.initTransactionNameSize();
     }
 
-    private static void prepareTable(BasicDataSource dataSource) {
-        Connection conn = null;
-        Statement s = null;
-        try {
-            conn = dataSource.getConnection();
-            s = conn.createStatement();
-            try {
-                s.execute("drop table global_table");
-            } catch (Exception e) {
-            }
+    private static void prepareTable(BasicDataSource dataSource) throws SQLException {
+        try (Connection conn = dataSource.getConnection();
+                Statement s = conn.createStatement()) {
+            s.execute("DROP TABLE IF EXISTS global_table");
             s.execute(
-                    "CREATE TABLE global_table ( xid varchar(96),  transaction_id long , STATUS int,  application_id varchar(32), transaction_service_group varchar(32) ,transaction_name varchar(128) ,timeout int,  begin_time long, application_data varchar(500), gmt_create TIMESTAMP(6) ,gmt_modified TIMESTAMP(6) ) ");
-            System.out.println("create table global_table success.");
-
-            try {
-                s.execute("drop table branch_table");
-            } catch (Exception e) {
-            }
+                    "CREATE TABLE global_table ( xid varchar(96), transaction_id long, STATUS int, application_id varchar(32), transaction_service_group varchar(32), transaction_name varchar(128), timeout int, begin_time long, application_data varchar(500), gmt_create TIMESTAMP(6), gmt_modified TIMESTAMP(6) )");
+            s.execute("DROP TABLE IF EXISTS branch_table");
             s.execute(
-                    "CREATE TABLE branch_table ( xid varchar(96),  transaction_id long , branch_id long, resource_group_id varchar(32), resource_id varchar(32) ,lock_key varchar(64) ,branch_type varchar(32) ,  status int , client_id varchar(128),  application_data varchar(500),  gmt_create TIMESTAMP(6) ,gmt_modified TIMESTAMP(6) ) ");
-            System.out.println("create table branch_table success.");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            IOUtil.close(s, conn);
+                    "CREATE TABLE branch_table ( xid varchar(96), transaction_id long, branch_id long, resource_group_id varchar(32), resource_id varchar(32), lock_key varchar(64), branch_type varchar(32), status int, client_id varchar(128), application_data varchar(500), gmt_create TIMESTAMP(6), gmt_modified TIMESTAMP(6) )");
         }
     }
 
