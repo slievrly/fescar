@@ -223,18 +223,18 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
 
         sessionManager.addGlobalSession(session);
 
-        GlobalSession globalSession_db = sessionManager.findGlobalSession(session.getXid());
-        Assertions.assertNotNull(globalSession_db);
+        GlobalSession globalSessionFromDb = sessionManager.findGlobalSession(session.getXid());
+        Assertions.assertNotNull(globalSessionFromDb);
 
-        Assertions.assertEquals(globalSession_db.getTransactionId(), session.getTransactionId());
-        Assertions.assertEquals(globalSession_db.getXid(), session.getXid());
-        Assertions.assertEquals(globalSession_db.getApplicationData(), session.getApplicationData());
-        Assertions.assertEquals(globalSession_db.getApplicationId(), session.getApplicationId());
-        Assertions.assertEquals(globalSession_db.getTransactionName(), session.getTransactionName());
-        Assertions.assertEquals(globalSession_db.getTransactionServiceGroup(), session.getTransactionServiceGroup());
-        Assertions.assertEquals(globalSession_db.getBeginTime(), session.getBeginTime());
-        Assertions.assertEquals(globalSession_db.getTimeout(), session.getTimeout());
-        Assertions.assertEquals(globalSession_db.getStatus(), session.getStatus());
+        Assertions.assertEquals(globalSessionFromDb.getTransactionId(), session.getTransactionId());
+        Assertions.assertEquals(globalSessionFromDb.getXid(), session.getXid());
+        Assertions.assertEquals(globalSessionFromDb.getApplicationData(), session.getApplicationData());
+        Assertions.assertEquals(globalSessionFromDb.getApplicationId(), session.getApplicationId());
+        Assertions.assertEquals(globalSessionFromDb.getTransactionName(), session.getTransactionName());
+        Assertions.assertEquals(globalSessionFromDb.getTransactionServiceGroup(), session.getTransactionServiceGroup());
+        Assertions.assertEquals(globalSessionFromDb.getBeginTime(), session.getBeginTime());
+        Assertions.assertEquals(globalSessionFromDb.getTimeout(), session.getTimeout());
+        Assertions.assertEquals(globalSessionFromDb.getStatus(), session.getStatus());
 
         String delSql = "delete from global_table where xid= '" + xid + "'";
         Connection conn = null;
@@ -434,13 +434,14 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
         Assertions.assertNotNull(rets);
         Assertions.assertEquals(1, rets.size());
 
-        GlobalSession globalSession_db = (GlobalSession) new ArrayList(rets).get(0);
+        GlobalSession globalSessionFromDb = (GlobalSession) new ArrayList(rets).get(0);
 
-        Assertions.assertNotNull(globalSession_db.getReverseSortedBranches());
-        Assertions.assertEquals(2, globalSession_db.getReverseSortedBranches().size());
+        Assertions.assertNotNull(globalSessionFromDb.getReverseSortedBranches());
+        Assertions.assertEquals(
+                2, globalSessionFromDb.getReverseSortedBranches().size());
 
-        Assertions.assertNotNull(globalSession_db.getBranch(1L));
-        Assertions.assertNotNull(globalSession_db.getBranch(2L));
+        Assertions.assertNotNull(globalSessionFromDb.getBranch(1L));
+        Assertions.assertNotNull(globalSessionFromDb.getBranch(2L));
 
         String delSql = "delete from branch_table where xid= '" + xid + "'" + ";"
                 + "delete from global_table where xid= '" + xid + "'";
@@ -514,12 +515,13 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
         Assertions.assertNotNull(rets);
         Assertions.assertEquals(1, rets.size());
 
-        GlobalSession globalSession_db = (GlobalSession) new ArrayList(rets).get(0);
+        GlobalSession globalSessionFromDb = (GlobalSession) new ArrayList(rets).get(0);
 
-        Assertions.assertNotNull(globalSession_db.getReverseSortedBranches());
-        Assertions.assertEquals(1, globalSession_db.getReverseSortedBranches().size());
+        Assertions.assertNotNull(globalSessionFromDb.getReverseSortedBranches());
+        Assertions.assertEquals(
+                1, globalSessionFromDb.getReverseSortedBranches().size());
 
-        Assertions.assertNotNull(globalSession_db.getBranch(1L));
+        Assertions.assertNotNull(globalSessionFromDb.getBranch(1L));
 
         String delSql = "delete from branch_table where xid= '" + xid + "'" + ";"
                 + "delete from global_table where xid= '" + xid + "'";
@@ -558,10 +560,10 @@ public class DataBaseSessionManagerTest extends BaseSpringBootTest {
 
         sessionManager.addGlobalSession(session);
 
-        GlobalSession globalSession_db = sessionManager.findGlobalSession(session.getXid());
-        Assertions.assertNotNull(globalSession_db);
+        GlobalSession globalSessionFromDb = sessionManager.findGlobalSession(session.getXid());
+        Assertions.assertNotNull(globalSessionFromDb);
 
-        Assertions.assertEquals(globalSession_db.getTransactionName(), finalTxName);
+        Assertions.assertEquals(globalSessionFromDb.getTransactionName(), finalTxName);
 
         String delSql = "delete from global_table where xid= '" + xid + "'";
         Connection conn = null;
