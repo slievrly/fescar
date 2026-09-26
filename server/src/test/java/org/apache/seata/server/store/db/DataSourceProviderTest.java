@@ -49,7 +49,7 @@ import java.util.List;
 /**
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
+public class DataSourceProviderTest extends BaseSpringBootTest {
 
     private final List<AutoCloseable> dataSources = new ArrayList<>();
     private String originalDriver;
