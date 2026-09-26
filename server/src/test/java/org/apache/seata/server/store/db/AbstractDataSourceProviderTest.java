@@ -16,14 +16,18 @@
  */
 package org.apache.seata.server.store.db;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.seata.common.loader.EnhancedServiceLoader;
 import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
 import org.apache.seata.config.ConfigurationFactory;
+import org.apache.seata.core.constants.DBType;
 import org.apache.seata.core.store.db.DataSourceProvider;
 import org.apache.seata.server.BaseSpringBootTest;
+import org.apache.seata.server.store.HikariDataSourceProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -31,13 +35,52 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.context.ApplicationContext;
 
 import javax.sql.DataSource;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
+
+    private final List<AutoCloseable> dataSources = new ArrayList<>();
+    private String originalDriver;
+    private String originalMinConn;
+
+    @BeforeEach
+    void preserveConfiguration() {
+        originalDriver = System.getProperty("store.db.driverClassName");
+        originalMinConn = System.getProperty("store.db.minConn");
+        System.clearProperty("store.db.driverClassName");
+        System.setProperty("store.db.minConn", "0");
+        ConfigurationFactory.reload();
+    }
+
+    private DataSource loadDataSource(String type) {
+        DataSource result =
+                EnhancedServiceLoader.load(DataSourceProvider.class, type).provide();
+        AutoCloseable closeable = (AutoCloseable) result;
+        if (!dataSources.contains(closeable)) {
+            dataSources.add(closeable);
+        }
+        return result;
+    }
+
+    private static void restoreProperty(String key, String value) {
+        if (value == null) {
+            System.clearProperty(key);
+        } else {
+            System.setProperty(key, value);
+        }
+    }
 
     private final String dbcpDatasourceType = "dbcp";
 
@@ -46,41 +89,40 @@ public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
     private final String hikariDatasourceType = "hikari";
 
     private final String mysqlJdbcDriver = "com.mysql.jdbc.Driver";
-    private final String mysql8JdbcDriver = "com.mysql.cj.jdbc.Driver";
 
     @BeforeAll
     public static void setUp(ApplicationContext context) {
         EnhancedServiceLoader.unloadAll();
         ConfigurationFactory.reload();
-        System.clearProperty("store.db.driverClassName");
     }
 
     @AfterEach
-    public void tearDown() {
-        EnhancedServiceLoader.unloadAll();
-        ConfigurationFactory.reload();
-        System.clearProperty("store.db.driverClassName");
+    public void tearDown() throws Exception {
+        try {
+            for (AutoCloseable dataSource : dataSources) {
+                dataSource.close();
+            }
+        } finally {
+            restoreProperty("store.db.driverClassName", originalDriver);
+            restoreProperty("store.db.minConn", originalMinConn);
+            EnhancedServiceLoader.unloadAll();
+            ConfigurationFactory.reload();
+        }
     }
 
     @Test
     @Order(1)
     public void testDbcpDataSourceProvider() {
-        DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType)
-                .provide();
+        DataSource dataSource = loadDataSource(dbcpDatasourceType);
         Assertions.assertNotNull(dataSource);
     }
 
     @Test
     @Order(2)
     public void testLoadMysqlDriver() {
-        System.setProperty("loader.path", "/tmp");
+
         System.setProperty("store.db.driverClassName", mysqlJdbcDriver);
-        DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType)
-                .provide();
-        Assertions.assertNotNull(dataSource);
-        System.setProperty("store.db.driverClassName", mysql8JdbcDriver);
-        dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType)
-                .provide();
+        DataSource dataSource = loadDataSource(dbcpDatasourceType);
         Assertions.assertNotNull(dataSource);
     }
 
@@ -88,8 +130,7 @@ public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
     @Order(3)
     public void testLoadDMDriver() {
         System.setProperty("store.db.driverClassName", "dm.jdbc.driver.DmDriver");
-        DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType)
-                .provide();
+        DataSource dataSource = loadDataSource(dbcpDatasourceType);
         Assertions.assertNotNull(dataSource);
     }
 
@@ -98,24 +139,21 @@ public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
     public void testLoadDriverFailed() {
         System.setProperty("store.db.driverClassName", "dm.jdbc.driver.DmDriver1");
         Assertions.assertThrows(EnhancedServiceNotFoundException.class, () -> {
-            EnhancedServiceLoader.load(DataSourceProvider.class, dbcpDatasourceType)
-                    .provide();
+            loadDataSource(dbcpDatasourceType);
         });
     }
 
     @Test
     @Order(5)
     public void testDruidDataSourceProvider() {
-        DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, druidDatasourceType)
-                .provide();
+        DataSource dataSource = loadDataSource(druidDatasourceType);
         Assertions.assertNotNull(dataSource);
     }
 
     @Test
     @Order(6)
     public void testHikariDataSourceProvider() {
-        DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, hikariDatasourceType)
-                .provide();
+        DataSource dataSource = loadDataSource(hikariDatasourceType);
         Assertions.assertNotNull(dataSource);
     }
 
@@ -129,80 +167,81 @@ public class AbstractDataSourceProviderTest extends BaseSpringBootTest {
 
     @Test
     @Order(8)
-    public void testHikariDataSourceProviderWithMySQLDriver() {
-        // Set MySQL 8 driver
-        System.setProperty("store.db.driverClassName", mysql8JdbcDriver);
+    public void testHikariDataSourceProviderWithIsolatedDriver() throws Exception {
+        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        List<Driver> originalDrivers = Collections.list(DriverManager.getDrivers());
+        URL driverJar =
+                org.h2.Driver.class.getProtectionDomain().getCodeSource().getLocation();
+        try (URLClassLoader isolated = new URLClassLoader(new URL[] {driverJar}, Driver.class.getClassLoader())) {
+            Assertions.assertSame(
+                    isolated, Class.forName("org.h2.Driver", true, isolated).getClassLoader());
+            HikariDataSourceProvider provider = new HikariDataSourceProvider() {
+                @Override
+                protected ClassLoader getDriverClassLoader() {
+                    return isolated;
+                }
 
-        try {
-            // Use Hikari data source provider
-            DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, hikariDatasourceType)
-                    .provide();
-            Assertions.assertNotNull(dataSource);
+                @Override
+                protected String getDriverClassName() {
+                    return "org.h2.Driver";
+                }
 
-            // Verify it's a HikariDataSource type
-            Assertions.assertTrue(dataSource instanceof com.zaxxer.hikari.HikariDataSource);
+                @Override
+                protected String getUrl() {
+                    return "jdbc:h2:mem:isolated_driver_test";
+                }
 
-            // The most critical verification: try to get a connection (this will trigger the actual driver loading)
-            // Note: This might throw an exception due to database connection failure, but importantly, it should not
-            // show "Failed to load driver class" error
-            try {
-                Connection connection = dataSource.getConnection();
-                // If we reach here, it means the driver loaded successfully and connection succeeded
-                Assertions.assertNotNull(connection);
-                connection.close();
-            } catch (SQLException e) {
-                // Database connection failure is normal (test environment might not have real MySQL), but error message
-                // should not contain driver class loading failure
-                String errorMessage = e.getMessage();
-                Assertions.assertFalse(
-                        errorMessage.contains("Failed to load driver class"),
-                        "Driver class should be loaded successfully, but got: " + errorMessage);
-                Assertions.assertFalse(
-                        errorMessage.contains("HikariConfig class loader"),
-                        "Driver classloader issue should be resolved, but got: " + errorMessage);
-                // Here we expect connection-related errors, such as connection timeout, connection refused, etc.
-                System.out.println("Expected database connection error (driver loaded successfully): " + errorMessage);
+                @Override
+                protected String getUser() {
+                    return "sa";
+                }
+
+                @Override
+                protected String getPassword() {
+                    return "";
+                }
+
+                @Override
+                protected DBType getDBType() {
+                    return DBType.H2;
+                }
+
+                @Override
+                protected int getMinConn() {
+                    return 0;
+                }
+            };
+            try (HikariDataSource dataSource = (HikariDataSource) provider.generate();
+                    Connection connection = dataSource.getConnection();
+                    Statement statement = connection.createStatement();
+                    ResultSet result = statement.executeQuery("SELECT 1")) {
+                Assertions.assertEquals("org.h2.Driver", dataSource.getDriverClassName());
+                Assertions.assertTrue(result.next());
+                Assertions.assertEquals(1, result.getInt(1));
+                Assertions.assertSame(original, Thread.currentThread().getContextClassLoader());
             }
-
-        } catch (Exception e) {
-            // If it's a driver loading related exception, the test should fail
-            if (e.getMessage().contains("Failed to load driver class")
-                    || e.getMessage().contains("HikariConfig class loader")) {
-                Assertions.fail("HikariCP should load MySQL driver successfully with custom classloader, but got: "
-                        + e.getMessage());
+        } finally {
+            for (Driver driver : Collections.list(DriverManager.getDrivers())) {
+                if (!originalDrivers.contains(driver)) {
+                    DriverManager.deregisterDriver(driver);
+                }
             }
-            // Other exceptions might be normal (such as configuration issues, etc.)
-            System.out.println("Non-driver related exception (might be expected): " + e.getMessage());
+            Assertions.assertSame(original, Thread.currentThread().getContextClassLoader());
         }
     }
 
     @Test
     @Order(9)
     public void testHikariDataSourceProviderWithMySQLLegacyDriver() {
-        // Test with legacy MySQL driver as well
         System.setProperty("store.db.driverClassName", mysqlJdbcDriver);
-
-        try {
-            DataSource dataSource = EnhancedServiceLoader.load(DataSourceProvider.class, hikariDatasourceType)
-                    .provide();
-            Assertions.assertNotNull(dataSource);
-
-            // Try to get connection to verify driver loading
-            try {
-                Connection connection = dataSource.getConnection();
-                Assertions.assertNotNull(connection);
-                connection.close();
-            } catch (SQLException e) {
-                String errorMessage = e.getMessage();
-                Assertions.assertFalse(
-                        errorMessage.contains("Failed to load driver class"),
-                        "Legacy MySQL driver should also be loaded successfully, but got: " + errorMessage);
+        HikariDataSourceProvider provider = new HikariDataSourceProvider() {
+            @Override
+            protected int getMinConn() {
+                return 0;
             }
-
-        } catch (Exception e) {
-            if (e.getMessage().contains("Failed to load driver class")) {
-                Assertions.fail("HikariCP should load legacy MySQL driver successfully, but got: " + e.getMessage());
-            }
+        };
+        try (HikariDataSource dataSource = (HikariDataSource) provider.generate()) {
+            Assertions.assertEquals(mysqlJdbcDriver, dataSource.getDriverClassName());
         }
     }
 }
