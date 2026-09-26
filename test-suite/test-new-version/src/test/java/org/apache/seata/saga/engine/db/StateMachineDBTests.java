@@ -55,6 +55,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import org.apache.seata.server.coordinator.DefaultCoordinator;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * State machine tests with db log store
@@ -82,9 +85,17 @@ public class StateMachineDBTests extends AbstractServerTest {
 
     @AfterAll
     public static void destroy() throws InterruptedException {
-        stopSeataServer();
-        TmNettyRemotingClient.getInstance().destroy();
-        RmNettyRemotingClient.getInstance().destroy();
+        DefaultCoordinator coordinator = DefaultCoordinator.getInstance();
+        try {
+            stopSeataServer();
+            for (String name : new String[] {"retryRollbacking", "retryCommitting", "asyncCommitting", "timeoutCheck", "undoLogDelete"}) {
+                ExecutorService executor = (ExecutorService) ReflectionTestUtils.getField(coordinator, name);
+                Assertions.assertTrue(executor.isShutdown(), name + " must stop before RM clients disconnect");
+            }
+        } finally {
+            TmNettyRemotingClient.getInstance().destroy();
+            RmNettyRemotingClient.getInstance().destroy();
+        }
     }
 
     private GlobalTransaction getGlobalTransaction(StateMachineInstance instance) {
